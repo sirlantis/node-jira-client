@@ -24,6 +24,7 @@ export default class JiraApi {
     this.request = options.request || request;
     this.webhookVersion = options.webHookVersion || '1.0';
     this.greenhopperVersion = options.greenhopperVersion || '1.0';
+    this.agileVersion = options.agileVersion || '1.0';
     this.baseOptions = {};
 
     if (options.oauth && options.oauth.consumer_key && options.oauth.access_token) {
@@ -165,6 +166,23 @@ export default class JiraApi {
   }
 
   /**
+   * @name makeAgileUri
+   * @function
+   * Creates a URI object for a given pathName
+   * @param {string} pathname - The url after the /rest/
+   */
+  makeAgileUri({ pathname, query }) {
+    const uri = url.format({
+      protocol: this.protocol,
+      hostname: this.host,
+      port: this.port,
+      pathname: `${this.base}/rest/agile/${this.agileVersion}${pathname}`,
+      query,
+    });
+    return decodeURIComponent(uri);
+  }
+
+  /**
    * @name doRequest
    * @function
    * Does a request based on the requestOptions object
@@ -300,13 +318,13 @@ export default class JiraApi {
    * @param {string} sprintId - the id of the sprint to add it to
    */
   addIssueToSprint(issueId, sprintId) {
-    return this.doRequest(this.makeRequestHeader(this.makeUri({
-      pathname: `/sprint/${sprintId}/issues/add`,
+    return this.doRequest(this.makeRequestHeader(this.makeAgileUri({
+      pathname: `/sprint/${sprintId}/issue`,
     }), {
-      method: 'PUT',
+      method: 'POST',
       followAllRedirects: true,
       body: {
-        issueKeys: [issueId],
+        issues: [issueId],
       },
     }));
   }
